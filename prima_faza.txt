@@ -1,0 +1,221 @@
+┌──(kali-adrian㉿kali)-[~]
+└─$ sudo tcpdump -i eth0 arp
+[sudo] password for kali-adrian: 
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+
+18:59:07.707470 ARP, Request who-has 192.168.100.10 tell 192.168.100.20, length 28
+18:59:07.707807 ARP, Reply 192.168.100.10 is-at 08:00:27:51:17:a7, length 46
+18:59:07.928195 ARP, Request who-has 192.168.100.20 tell 192.168.100.10, length 46
+18:59:07.928249 ARP, Reply 192.168.100.20 is-at 08:00:27:0a:cd:56, length 28
+18:59:35.079047 ARP, Request who-has 192.168.100.20 tell 192.168.100.10, length 46
+18:59:35.079071 ARP, Reply 192.168.100.20 is-at 08:00:27:0a:cd:56, length 28
+
+
+┌──(kali-adrian㉿kali)-[~]
+└─$ sudo python3 test.py -i eth0
+[sudo] password for kali-adrian: 
+
+[2026-03-03 18:56:47] Starting ARP MITM watch on eth0 (window=10s burst=25)
+[2026-03-03 18:56:47] Tip: run as root. Stop with Ctrl+C.
+
+
+Asta înseamnă că:
+
+✅ Rețeaua funcționează
+✅ Kali vede trafic ARP
+✅ Sniffing-ul funcționează corect
+✅ Interfața este bună (eth0)
+
+🔍 Hai să analizăm ce ai capturat
+
+Output-ul tău:
+
+ARP, Request who-has 192.168.100.10 tell 192.168.100.20
+ARP, Reply 192.168.100.10 is-at 08:00:27:51:17:a7
+
+Înseamnă:
+
+🔹 Kali (192.168.100.20) întreabă:
+„Cine are 192.168.100.10?”
+
+🔹 Serverul răspunde:
+„192.168.100.10 este la MAC 08:00:27:51:17:a7”
+
+Apoi invers:
+
+ARP, Request who-has 192.168.100.20 tell 192.168.100.10
+ARP, Reply 192.168.100.20 is-at 08:00:27:0a:cd:56
+
+🔹 Serverul întreabă
+🔹 Kali răspunde
+
+👉 Exact comportament normal de rețea.
+
+❓ De ce scriptul Python nu afișează nimic?
+
+Pentru că scriptul tău:
+
+afișează DOAR când detectează:
+
+schimbare IP → MAC
+
+burst anormal
+
+comportament suspect
+
+Acum totul este normal.
+Deci liniștea = sistem securizat ✔
+
+🎯 Rolul fiecărei componente în proiect
+
+Proiectul tău simulează un mic mediu de rețea în care vrei să detectezi un posibil atac Man-in-the-Middle (MITM).
+
+Ai două mașini virtuale:
+
+Kali Linux
+
+Ubuntu Server
+
+🟢 1️⃣ Ubuntu Server – Rolul lui
+
+Ubuntu Server reprezintă:
+
+✔ un sistem legitim din rețea
+✔ o resursă care comunică
+✔ potențială țintă a unui atac MITM
+
+Ce face concret:
+
+Are IP: 192.168.100.10
+
+Trimite trafic (ping către Kali)
+
+Răspunde la solicitări ARP
+
+Poate fi folosit pentru a simula o anomalie (schimbare MAC)
+
+🔎 Cum explici profesoarei
+
+Ubuntu Server reprezintă un nod legitim din rețea, care generează trafic normal. Este folosit pentru a observa comportamentul ARP în condiții normale și pentru a simula o modificare IP-MAC în scopul testării mecanismului de detecție.
+
+🔵 2️⃣ Kali Linux – Rolul lui
+
+Kali nu este atacatorul în proiectul tău.
+Kali este sistemul de monitorizare.
+
+Are rolul de:
+
+✔ a captura pachetele ARP
+✔ a analiza relația IP → MAC
+✔ a detecta schimbări suspecte
+✔ a genera alerte
+
+Pe Kali rulează scriptul Python care:
+
+ascultă traficul ARP
+
+ține o tabelă IP → MAC
+
+compară dacă mapping-ul se schimbă
+
+anunță dacă apare o anomalie
+
+🔎 Cum explici profesoarei
+
+Kali Linux este utilizat pentru monitorizarea traficului din rețea. Scriptul implementat analizează pachetele ARP și detectează modificări suspecte ale asocierii IP-MAC, indicator specific unui posibil atac MITM.
+
+🧠 3️⃣ Ce înseamnă ce ai văzut în tcpdump
+
+Când ai rulat:
+
+sudo tcpdump -i eth0 arp
+
+Ai văzut:
+
+ARP, Request who-has 192.168.100.10 tell 192.168.100.20
+
+Înseamnă:
+
+👉 Kali întreabă:
+„Cine are IP-ul 192.168.100.10?”
+
+Serverul răspunde:
+
+ARP, Reply 192.168.100.10 is-at 08:00:27:51:17:a7
+
+Înseamnă:
+
+👉 „IP-ul 192.168.100.10 este asociat cu MAC-ul 08:00:27:51:17:a7”
+
+Acesta este comportament normal.
+
+🔥 Ce înseamnă schimbarea MAC-ului
+
+Când tu modifici MAC-ul pe server:
+
+IP-ul rămâne același
+
+dar MAC-ul se schimbă
+
+Scriptul detectează:
+
+„Acest IP avea alt MAC înainte. De ce s-a schimbat?”
+
+Exact asta face un atac MITM prin ARP spoofing:
+
+atacatorul trimite răspunsuri ARP false
+
+spune că IP-ul serverului are alt MAC (al atacatorului)
+
+Deci scriptul tău caută fix acest simptom.
+
+🎓 Explicația simplă pentru prezentare
+
+Poți spune așa:
+
+În mod normal, fiecare adresă IP din rețea este asociată cu un singur MAC address. Scriptul monitorizează aceste asocieri. Dacă pentru același IP apare un MAC diferit, sistemul generează o alertă, deoarece acesta este un comportament caracteristic atacurilor de tip ARP spoofing, utilizate în scenarii MITM.
+
+📌 Pe scurt, rolurile sunt:
+Componentă	Rol
+Ubuntu Server	Sistem legitim care generează trafic
+Kali Linux	Sistem de monitorizare și detecție
+tcpdump	Verificare manuală a traficului
+Script Python	Detector automat de anomalii ARP
+
+-----------------------------------------------------------------
+🔥 Rolul adresei MAC într-o rețea
+
+Adresa MAC funcționează la:
+
+Layer 2 – Data Link (model OSI)
+
+Rolul ei principal este:
+
+👉 să permită comunicarea între dispozitive în aceeași rețea locală (LAN)
+
+🔹 Cum funcționează practic
+
+Când un calculator vrea să trimită date către altul în aceeași rețea:
+
+1️⃣ Știe IP-ul țintei
+2️⃣ Folosește ARP (Address Resolution Protocol)
+3️⃣ ARP află ce MAC corespunde acelui IP
+4️⃣ Datele sunt trimise la acea adresă MAC🔥 Rolul adresei MAC într-o rețea
+
+Adresa MAC funcționează la:
+
+Layer 2 – Data Link (model OSI)
+
+Rolul ei principal este:
+
+👉 să permită comunicarea între dispozitive în aceeași rețea locală (LAN)
+
+🔹 Cum funcționează practic
+
+Când un calculator vrea să trimită date către altul în aceeași rețea:
+
+1️⃣ Știe IP-ul țintei
+2️⃣ Folosește ARP (Address Resolution Protocol)
+3️⃣ ARP află ce MAC corespunde acelui IP
+4️⃣ Datele sunt trimise la acea adresă MAC

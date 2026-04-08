@@ -1,0 +1,43 @@
+pe kali
+🟢 1️⃣ 192.168.100.20
+
+👉 Aceasta este adresa ta din Internal Network (test-mitm)
+Este cea mai importantă pentru proiect.
+
+Rețea: 192.168.100.0/24
+
+Comunică cu Ubuntu Server (192.168.100.10)
+
+Scriptul tău MITM rulează pe această interfață (eth0)
+
+📌 Asta este rețeaua izolată pentru experiment.
+
+🔵 2️⃣ 10.0.3.15
+
+👉 Aceasta este adresa NAT oferită de VirtualBox.
+
+Rețea: 10.0.3.0/24
+
+Permite acces la internet
+
+Este pe eth1
+
+Această adresă NU este folosită pentru MITM în proiect.
+
+🟣 3️⃣ și 4️⃣ – adresele lungi (fd17:...)
+
+Acestea sunt adrese IPv6.
+
+Exemplu:
+
+fd17:625c:f037:3:9b6e:8d6:c085:70a
+
+Ce înseamnă:
+
+fd17:: → prefix ULA (Unique Local Address)
+
+echivalentul IPv6 al 192.168.x.x
+
+sunt generate automat
+
+📌 Ele nu sunt relevante pentru proiectul tău (tu monitorizezi ARP → ARP este doar IPv4).

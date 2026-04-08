@@ -1,0 +1,12 @@
+kali-server-test  - login server
+kali-adrian login kal
+
+eth1 → are IP 10.0.3.15/24 ✔kali
+👉 Asta este adaptorul NAT → ai internet.
+
+eth0 → nu are IP ✔
+
+👉 Asta este adaptorul Internal Network (test-mitm) → pentru lab MITM.
+
+
+192.168.100.10  - ip server kali

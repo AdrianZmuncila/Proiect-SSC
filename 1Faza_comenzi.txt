@@ -1,0 +1,102 @@
+🧩 1️⃣ Configurarea topologiei în VirtualBox
+
+Au fost utilizate două mașini virtuale:
+
+Kali Linux
+
+Ubuntu Server
+
+Ambele au fost conectate la:
+
+Settings → Network → Internal Network
+Name: test-mitm
+
+Kali are și un al doilea adaptor:
+
+Adapter 2 → NAT (pentru internet)
+
+🌐 2️⃣ Configurarea adreselor IP
+🔵 Pe Kali Linux
+
+Verificare interfețe:
+
+ip -4 a
+
+Rezultat relevant:
+
+eth0 → 192.168.100.20/24
+eth1 → 10.0.3.15/24
+
+Interpretare:
+
+eth0 = rețeaua internă (test-mitm)
+
+eth1 = NAT
+
+Dacă IP-ul nu era setat pe eth0, s-a configurat manual:
+
+sudo ip addr add 192.168.100.20/24 dev eth0
+sudo ip link set eth0 up
+🟢 Pe Ubuntu Server
+
+Verificare IP:
+
+ip -4 a
+
+Trebuia să existe:
+
+192.168.100.10/24
+
+Dacă nu era configurat:
+
+sudo ip addr add 192.168.100.10/24 dev enp0s3
+sudo ip link set enp0s3 up
+🔎 3️⃣ Verificarea conectivității
+
+Test de conectivitate din ambele direcții.
+
+Pe Ubuntu Server:
+ping -c 3 192.168.100.20
+Pe Kali:
+ping -c 3 192.168.100.10
+
+Rezultat corect:
+
+3 packets transmitted, 3 received, 0% packet loss
+
+👉 Confirmă că rețeaua internă funcționează.
+
+🧪 4️⃣ Verificarea traficului ARP cu tcpdump
+
+Pentru a confirma că există trafic ARP real în rețea, pe Kali s-a rulat:
+
+sudo tcpdump -i eth0 arp
+
+Output observat:
+
+ARP, Request who-has 192.168.100.10 tell 192.168.100.20
+ARP, Reply 192.168.100.10 is-at 08:00:27:51:17:a7
+
+Interpretare:
+
+Kali solicită MAC-ul serverului.
+
+Serverul răspunde cu adresa MAC.
+
+Comunicare ARP normală.
+
+👉 Confirmă funcționarea mecanismului ARP.
+
+🐍 5️⃣ Rularea scriptului de monitorizare
+
+Pe Kali:
+
+sudo python3 test.py -i eth0
+
+Output:
+
+Starting ARP MITM watch on eth0
+
+Scriptul a fost lăsat să ruleze în timp ce se genera trafic din Ubuntu Server:
+
+ping -c 5 192.168.100.20

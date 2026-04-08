@@ -1,0 +1,46 @@
+Varianta 1: schimbare controlată IP→MAC
+
+Asta declanșează:
+
+[ALERT] IP->MAC changed: ...
+
+Ordinea corectă:
+
+Pe Kali pornești detectorul:
+
+sudo python3 test.py -i eth0
+
+Generezi trafic normal între Kali și server, ca scriptul să învețe maparea inițială:
+
+ping -c 3 192.168.100.10 - pe kali
+
+Pe Ubuntu Server notezi MAC-ul actual:
+
+ip link
+ip link show enp0s3
+
+Schimbi temporar MAC-ul:
+
+
+mac original:
+
+08:00:27:09:71:73
+
+sudo ip link set enp0s3 down
+sudo ip link set enp0s3 address 08:00:27:AA:BB:CC
+sudo ip link set enp0s3 up
+
+------------
+pe kali pe a 2 terminal sudo tcpdump -i eth0 -e arp
+-------
+Forțezi trafic nou: pe server
+
+ping -c 3 192.168.100.20
+
+Asta ar trebui să producă alerta de schimbare IP→MAC.
+
+Revii la MAC-ul inițial:
+
+sudo ip link set enp0s3 down
+sudo ip link set enp0s3 address <MAC_INITIAL>
+sudo ip link set enp0s3 up
